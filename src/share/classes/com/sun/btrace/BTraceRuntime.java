@@ -220,6 +220,7 @@ public final class BTraceRuntime  {
         LINE_SEPARATOR = System.getProperty("line.separator");
     }
 
+    // what's the usage of this field ..
     private static ThreadLocal<RTWrapper> rt = new ThreadLocal<RTWrapper>() {
         @Override
         protected RTWrapper initialValue() {
@@ -440,6 +441,16 @@ public final class BTraceRuntime  {
         this.debug = ds != null ? ds : new DebugSupport(null);
 
         runtimes.put(className, this);
+        // encounter a problem that, btrace script exit, but thread remains
+        //
+        //        java.lang.Thread.State: TIMED_WAITING (sleeping)
+        //        at java.lang.Thread.sleep(Native Method)
+        //        at com.sun.btrace.BTraceRuntime$2.idle(BTraceRuntime.java:406)
+        //        at com.sun.btrace.org.jctools.queues.BaseMpscLinkedArrayQueue.drain(BaseMpscLinkedArrayQueue.java:586)
+        //        at com.sun.btrace.BTraceRuntime$4.run(BTraceRuntime.java:445)
+        //        at java.lang.Thread.run(Thread.java:745)
+
+        // does btrace allow scripts concurrently run ? the answer is yes ..
         this.cmdThread = new Thread(new Runnable() {
             @Override
             public void run() {
